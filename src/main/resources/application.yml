@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: secure_file_explorer_backend
+
+explorer:
+  root-path: ./workdir
