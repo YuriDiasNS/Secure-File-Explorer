@@ -77,11 +77,13 @@ public class FileExplorerService {
     // AINDA NÃO IMPLEMENTADOS
     // =========================
     public Resource loadAsResource(String path) {
+        // TODO: Implementar download de arquivo
         Path safePath = PathSanitizer.sanitize(path, rootPath);
         throw new UnsupportedOperationException("Unimplemented method 'loadAsResource'");
     }
 
     public Object info(String path) {
+        // TODO: Implementar info de arquivo/diretório
         Path safePath = PathSanitizer.sanitize(path, rootPath);
         throw new UnsupportedOperationException("Unimplemented method 'info'");
     }
