@@ -4,6 +4,7 @@ import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
 import com.yuridiasns.secure_file_explorer_backend.model.DirectoryView;
 import com.yuridiasns.secure_file_explorer_backend.model.ExplorerResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.FileView;
+import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,9 @@ public class FileExplorerService {
     // LISTAR ÁRVORE COMPLETA
     // =========================
     public ExplorerResponse list(String path) {
+        // Aqui o path está sendo recebido do endpoint, porem como atualmente não 
+        // e utilizado para navegar, ele é ignorado, logo sempre será listados os diretorios
+        // a partir do diretorio raiz.
         DirectoryView rootView = buildDirectoryTree(rootPath, "");
         return new ExplorerResponse(rootView);
     }
@@ -72,10 +76,12 @@ public class FileExplorerService {
     // AINDA NÃO IMPLEMENTADOS
     // =========================
     public Resource loadAsResource(String path) {
+        Path safePath = PathSanitizer.sanitize(path, rootPath);
         throw new UnsupportedOperationException("Unimplemented method 'loadAsResource'");
     }
 
     public Object info(String path) {
+        Path safePath = PathSanitizer.sanitize(path, rootPath);
         throw new UnsupportedOperationException("Unimplemented method 'info'");
     }
 }
