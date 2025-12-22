@@ -24,8 +24,7 @@ public class FileExplorerService {
     private void validateRoot() {
         if (rootPath == null || !Files.isDirectory(rootPath)) {
             throw new IllegalStateException(
-                "Diretório raiz inválido ou inexistente: " + rootPath.toAbsolutePath()
-            );
+                    "Diretório raiz inválido ou inexistente: " + rootPath.toAbsolutePath());
         }
     }
 
@@ -45,24 +44,25 @@ public class FileExplorerService {
 
         try {
             Files.list(directoryPath).forEach(path -> {
+                String name = path.getFileName().toString();
+
                 try {
                     if (Files.isDirectory(path)) {
-                        DirectoryView childDir =
-                                buildDirectoryTree(path, path.getFileName().toString());
-                        directoryView.addChild(childDir);
+                        directoryView.addChild(
+                                buildDirectoryTree(path, name));
                     } else if (Files.isRegularFile(path)) {
                         directoryView.addChild(
-                                new FileView(path.getFileName().toString())
-                        );
+                                new FileView(name));
                     }
-                } catch (Exception ignored) {
-                    // Falha em um arquivo não quebra o todo
+                } catch (Exception e) {
+                    directoryView.addChild(
+                            FileView.inaccessible(name, "Arquivo inacessível"));
                 }
             });
         } catch (Exception e) {
-            throw new IllegalStateException(
-                    "Erro ao ler diretório: " + directoryPath.getFileName()
-            );
+            return DirectoryView.inaccessible(
+                    logicalName,
+                    "Diretório inacessível");
         }
 
         return directoryView;
