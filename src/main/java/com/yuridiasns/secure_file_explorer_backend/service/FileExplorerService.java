@@ -33,6 +33,7 @@ public class FileExplorerService {
     // LISTAR ÁRVORE COMPLETA
     // =========================
     public ExplorerResponse list(String path) {
+        // TODO: Implementar navegação por subdiretórios
         // Aqui o path está sendo recebido do endpoint, porem como atualmente não 
         // e utilizado para navegar, ele é ignorado, logo sempre será listados os diretorios
         // a partir do diretorio raiz.
