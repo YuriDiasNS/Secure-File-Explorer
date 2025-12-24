@@ -24,14 +24,12 @@ public class FileExplorerService {
 
     private void validateRoot() {
         if (rootPath == null || !Files.isDirectory(rootPath)) {
-            throw new IllegalStateException(
-                    "Diretório raiz inválido ou inexistente: " + rootPath.toAbsolutePath());
+            throw new IllegalStateException("Diretório raiz inválido ou inexistente: " + rootPath.toAbsolutePath());
         }
     }
 
-    // =========================
     // LISTAR ÁRVORE COMPLETA
-    // =========================
+
     public ExplorerResponse list(String path) {
         // TODO: Implementar navegação por subdiretórios
         // Aqui o path está sendo recebido do endpoint, porem como atualmente não 
@@ -41,9 +39,6 @@ public class FileExplorerService {
         return new ExplorerResponse(rootView);
     }
 
-    // =========================
-    // MÉTODO RECURSIVO
-    // =========================
     private DirectoryView buildDirectoryTree(Path directoryPath, String logicalName) {
         DirectoryView directoryView = new DirectoryView(logicalName);
 
@@ -53,29 +48,24 @@ public class FileExplorerService {
 
                 try {
                     if (Files.isDirectory(path)) {
-                        directoryView.addChild(
-                                buildDirectoryTree(path, name));
+                        directoryView.addChild(buildDirectoryTree(path, name));
                     } else if (Files.isRegularFile(path)) {
-                        directoryView.addChild(
-                                new FileView(name));
+                        directoryView.addChild(new FileView(name));
                     }
                 } catch (Exception e) {
-                    directoryView.addChild(
-                            FileView.inaccessible(name, "Arquivo inacessível"));
+                    directoryView.addChild(FileView.inaccessible(name, "Arquivo inacessível"));
                 }
             });
         } catch (Exception e) {
-            return DirectoryView.inaccessible(
-                    logicalName,
-                    "Diretório inacessível");
+            return DirectoryView.inaccessible(logicalName,"Diretório inacessível");
         }
 
         return directoryView;
     }
 
-    // =========================
-    // AINDA NÃO IMPLEMENTADOS
-    // =========================
+
+    // NÃO IMPLEMENTADOS
+
     public Resource loadAsResource(String path) {
         // TODO: Implementar download de arquivo
         // Path safePath = PathSanitizer.sanitize(path, rootPath);
