@@ -4,7 +4,7 @@ import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
 import com.yuridiasns.secure_file_explorer_backend.model.DirectoryView;
 import com.yuridiasns.secure_file_explorer_backend.model.ExplorerResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.FileView;
-import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
+// import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -78,13 +78,13 @@ public class FileExplorerService {
     // =========================
     public Resource loadAsResource(String path) {
         // TODO: Implementar download de arquivo
-        Path safePath = PathSanitizer.sanitize(path, rootPath);
+        // Path safePath = PathSanitizer.sanitize(path, rootPath);
         throw new UnsupportedOperationException("Unimplemented method 'loadAsResource'");
     }
 
     public Object info(String path) {
         // TODO: Implementar info de arquivo/diretório
-        Path safePath = PathSanitizer.sanitize(path, rootPath);
+        // Path safePath = PathSanitizer.sanitize(path, rootPath);
         throw new UnsupportedOperationException("Unimplemented method 'info'");
     }
 }
