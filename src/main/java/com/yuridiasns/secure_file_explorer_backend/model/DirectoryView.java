@@ -22,6 +22,15 @@ public class DirectoryView {
         return view;
     }
 
+    // 👇 NOVO: factory para symlink
+    public static DirectoryView symlink(String name, String error) {
+        DirectoryView view = new DirectoryView(name);
+        view.type = "symlink";
+        view.accessible = false;
+        view.error = error;
+        return view;
+    }
+
     public void addChild(Object child) {
         children.add(child);
     }

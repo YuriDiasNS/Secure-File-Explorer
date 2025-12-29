@@ -3,8 +3,9 @@ package com.yuridiasns.secure_file_explorer_backend.service;
 import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
 import com.yuridiasns.secure_file_explorer_backend.model.DirectoryView;
 import com.yuridiasns.secure_file_explorer_backend.model.ExplorerResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.FileView;
-// import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
+import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -32,10 +33,11 @@ public class FileExplorerService {
 
     public ExplorerResponse list(String path) {
         // TODO: Implementar navegação por subdiretórios
-        // Aqui o path está sendo recebido do endpoint, porem como atualmente não 
-        // e utilizado para navegar, ele é ignorado, logo sempre será listados os diretorios
+        // Aqui o path está sendo recebido do endpoint, porem como atualmente não
+        // e utilizado para navegar, ele é ignorado, logo sempre será listados os
+        // diretorios
         // a partir do diretorio raiz.
-        DirectoryView rootView = buildDirectoryTree(rootPath, "");
+        DirectoryView rootView = buildDirectoryTree(rootPath, "workdir");
         return new ExplorerResponse(rootView);
     }
 
@@ -45,24 +47,35 @@ public class FileExplorerService {
         try {
             Files.list(directoryPath).forEach(path -> {
                 String name = path.getFileName().toString();
-
                 try {
+                    
+                    // BLOQUEIA SYMLINK ANTES DE TUDO
+                    if (Files.isSymbolicLink(path)) {
+                        directoryView.addChild(DirectoryView.symlink(name,"Symlink não pode ser navegado"));
+                        return;
+                    }
+
+                    // DIRETÓRIO REAL
                     if (Files.isDirectory(path)) {
                         directoryView.addChild(buildDirectoryTree(path, name));
-                    } else if (Files.isRegularFile(path)) {
+                        return;
+                    }
+                    
+                    // ARQUIVO REAL
+                    if (Files.isRegularFile(path)) {
                         directoryView.addChild(new FileView(name));
                     }
                 } catch (Exception e) {
-                    directoryView.addChild(FileView.inaccessible(name, "Arquivo inacessível"));
+                    directoryView.addChild(FileView.inaccessible(name,"Arquivo inacessível"));
                 }
             });
         } catch (Exception e) {
-            return DirectoryView.inaccessible(logicalName,"Diretório inacessível");
+            return DirectoryView.inaccessible(
+                    logicalName,
+                    "Diretório inacessível");
         }
-
         return directoryView;
     }
-
 
     // NÃO IMPLEMENTADOS
 
@@ -72,9 +85,38 @@ public class FileExplorerService {
         throw new UnsupportedOperationException("Unimplemented method 'loadAsResource'");
     }
 
-    public Object info(String path) {
-        // TODO: Implementar info de arquivo/diretório
-        // Path safePath = PathSanitizer.sanitize(path, rootPath);
-        throw new UnsupportedOperationException("Unimplemented method 'info'");
+    public FileInfoResponse info(String path) {
+        if (path == null || path.isBlank()) {
+            throw new IllegalArgumentException("Caminho não informado");
+        }
+
+        Path target = PathSanitizer.sanitize(path, rootPath);
+
+        if (!Files.exists(target)) {
+            throw new IllegalArgumentException("Arquivo ou diretório não encontrado");
+        }
+        try {
+            boolean isDirectory = Files.isDirectory(target);
+            boolean isFile = Files.isRegularFile(target);
+
+            String mimeType = null;
+            long size = 0;
+            boolean executable = false;
+
+            if (isFile) {
+                mimeType = Files.probeContentType(target);
+                size = Files.size(target);
+                executable = Files.isExecutable(target);
+            }
+
+            return new FileInfoResponse(
+                    target.getFileName().toString(),
+                    isDirectory ? "directory" : "file",
+                    mimeType,
+                    size,
+                    executable);
+        } catch (Exception e) {
+            throw new IllegalStateException("Erro ao obter informações do arquivo", e);
+        }
     }
 }
