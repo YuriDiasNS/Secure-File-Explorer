@@ -31,10 +31,7 @@ public class FileExplorerController {
             ExplorerResponse response = fileExplorerService.list(path);
 
             return ResponseEntity.ok(
-                    ApiResponse.success(
-                            "Diretório listado com sucesso",
-                            response
-                    )
+                    ApiResponse.success("Diretório listado com sucesso",response)
             );
 
         } catch (IllegalArgumentException e) {
