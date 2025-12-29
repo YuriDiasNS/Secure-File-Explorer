@@ -11,6 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
 @Service
@@ -48,10 +49,10 @@ public class FileExplorerService {
             Files.list(directoryPath).forEach(path -> {
                 String name = path.getFileName().toString();
                 try {
-                    
+
                     // BLOQUEIA SYMLINK ANTES DE TUDO
                     if (Files.isSymbolicLink(path)) {
-                        directoryView.addChild(DirectoryView.symlink(name,"Symlink não pode ser navegado"));
+                        directoryView.addChild(DirectoryView.symlink(name, "Symlink não pode ser navegado"));
                         return;
                     }
 
@@ -60,13 +61,13 @@ public class FileExplorerService {
                         directoryView.addChild(buildDirectoryTree(path, name));
                         return;
                     }
-                    
+
                     // ARQUIVO REAL
                     if (Files.isRegularFile(path)) {
                         directoryView.addChild(new FileView(name));
                     }
                 } catch (Exception e) {
-                    directoryView.addChild(FileView.inaccessible(name,"Arquivo inacessível"));
+                    directoryView.addChild(FileView.inaccessible(name, "Arquivo inacessível"));
                 }
             });
         } catch (Exception e) {
@@ -86,19 +87,31 @@ public class FileExplorerService {
     }
 
     public FileInfoResponse info(String path) {
-        if (path == null || path.isBlank()) {
-            throw new IllegalArgumentException("Caminho não informado");
-        }
 
         Path target = PathSanitizer.sanitize(path, rootPath);
 
-        if (!Files.exists(target)) {
+        if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
             throw new IllegalArgumentException("Arquivo ou diretório não encontrado");
         }
-        try {
-            boolean isDirectory = Files.isDirectory(target);
-            boolean isFile = Files.isRegularFile(target);
 
+        try {
+            // 🔗 DETECTA SYMLINK
+            if (Files.isSymbolicLink(target)) {
+
+                Path realTarget = target.toRealPath();
+
+                boolean escapesRoot = !realTarget.startsWith(rootPath.toRealPath());
+
+                return new FileInfoResponse(
+                        target.getFileName().toString(),
+                        "symlink",
+                        null,
+                        0,
+                        false,
+                        escapesRoot);
+            }
+            boolean isDirectory = Files.isDirectory(target, LinkOption.NOFOLLOW_LINKS);
+            boolean isFile = Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS);
             String mimeType = null;
             long size = 0;
             boolean executable = false;
@@ -114,7 +127,9 @@ public class FileExplorerService {
                     isDirectory ? "directory" : "file",
                     mimeType,
                     size,
-                    executable);
+                    executable,
+                    false);
+
         } catch (Exception e) {
             throw new IllegalStateException("Erro ao obter informações do arquivo", e);
         }

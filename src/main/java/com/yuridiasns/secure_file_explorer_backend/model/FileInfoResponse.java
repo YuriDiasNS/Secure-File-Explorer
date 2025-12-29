@@ -3,23 +3,26 @@ package com.yuridiasns.secure_file_explorer_backend.model;
 public class FileInfoResponse {
 
     private String name;
-    private String type;          // file | directory
-    private String mimeType;      // application/pdf, application/x-msdownload, etc
-    private long size;            // bytes
+    private String type; // file | directory | symlink
+    private String mimeType;
+    private long size;
     private boolean executable;
+    private boolean pointsOutsideRoot;
 
     public FileInfoResponse(
             String name,
             String type,
             String mimeType,
             long size,
-            boolean executable
+            boolean executable,
+            boolean pointsOutsideRoot
     ) {
         this.name = name;
         this.type = type;
         this.mimeType = mimeType;
         this.size = size;
         this.executable = executable;
+        this.pointsOutsideRoot = pointsOutsideRoot;
     }
 
     public String getName() {
@@ -40,5 +43,8 @@ public class FileInfoResponse {
 
     public boolean isExecutable() {
         return executable;
+    }
+    public boolean isPointsOutsideRoot() {
+        return pointsOutsideRoot;
     }
 }
