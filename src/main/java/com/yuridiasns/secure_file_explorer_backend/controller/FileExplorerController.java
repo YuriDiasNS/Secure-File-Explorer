@@ -2,6 +2,7 @@ package com.yuridiasns.secure_file_explorer_backend.controller;
 
 import com.yuridiasns.secure_file_explorer_backend.model.ApiResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.ExplorerResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.service.FileExplorerService;
 
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class FileExplorerController {
     // INFO
     // =========================
     @GetMapping("/info")
-    public ApiResponse<?> getInfo(@RequestParam String path) {
+    public ApiResponse<FileInfoResponse> getInfo(@RequestParam String path) {
         return ApiResponse.success(
                 "Informações obtidas com sucesso",
                 fileExplorerService.info(path));
