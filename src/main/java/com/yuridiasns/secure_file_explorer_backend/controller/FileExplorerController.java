@@ -4,12 +4,6 @@ import com.yuridiasns.secure_file_explorer_backend.model.ApiResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.ExplorerResponse;
 import com.yuridiasns.secure_file_explorer_backend.service.FileExplorerService;
 
-import jakarta.servlet.http.HttpServletRequest;
-
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,70 +17,22 @@ public class FileExplorerController {
     }
 
     // =========================
-    // LISTAR DIRETÓRIO
+    // LISTAR ROOT
     // =========================
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> listDirectory(HttpServletRequest request) {
-        if (!request.getParameterMap().isEmpty()) {
-            return ResponseEntity.badRequest().body(
-                    ApiResponse.error("Este endpoint não aceita parâmetros"));
-        }
-        try {
-            ExplorerResponse response = fileExplorerService.listRoot();
-
-            return ResponseEntity.ok(
-                    ApiResponse.success("Diretório listado com sucesso", response));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Erro interno ao listar diretório"));
-        }
+    public ApiResponse<ExplorerResponse> listRoot() {
+        return ApiResponse.success(
+                "Diretório listado com sucesso",
+                fileExplorerService.listRoot());
     }
 
     // =========================
-    // DOWNLOAD DE ARQUIVO
-    // =========================
-    @GetMapping("/download")
-    public ResponseEntity<?> downloadFile(
-            @RequestParam String path) {
-        try {
-            Resource resource = fileExplorerService.loadAsResource(path);
-
-            return ResponseEntity.ok()
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + resource.getFilename() + "\"")
-                    .body(resource);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    ApiResponse.error(e.getMessage()));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Erro ao processar download do arquivo"));
-        }
-    }
-
-    // =========================
-    // INFO DE ARQUIVO/DIRETÓRIO
+    // INFO
     // =========================
     @GetMapping("/info")
-    public ResponseEntity<ApiResponse<?>> getInfo(
-            @RequestParam String path) {
-        try {
-            Object info = fileExplorerService.info(path);
-
-            return ResponseEntity.ok(
-                    ApiResponse.success("Informações obtidas com sucesso", info));
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    ApiResponse.error(e.getMessage()));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Erro ao obter informações"));
-        }
+    public ApiResponse<?> getInfo(@RequestParam String path) {
+        return ApiResponse.success(
+                "Informações obtidas com sucesso",
+                fileExplorerService.info(path));
     }
 }

@@ -1,6 +1,8 @@
 package com.yuridiasns.secure_file_explorer_backend.service;
 
 import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
+//import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
+import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
 import com.yuridiasns.secure_file_explorer_backend.model.DirectoryView;
 import com.yuridiasns.secure_file_explorer_backend.model.ExplorerResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.FileInfoResponse;
@@ -26,12 +28,13 @@ public class FileExplorerService {
 
     private void validateRoot() {
         if (rootPath == null || !Files.isDirectory(rootPath)) {
-            throw new IllegalStateException("Diretório raiz inválido ou inexistente: " + rootPath.toAbsolutePath());
+            throw new IllegalStateException("Diretório raiz inválido");
         }
     }
 
-    // LISTAR ÁRVORE COMPLETA
-
+    // =========================
+    // LISTAR ROOT
+    // =========================
     public ExplorerResponse listRoot() {
         DirectoryView rootView = buildDirectoryTree(rootPath, "workdir");
         return new ExplorerResponse(rootView);
@@ -43,26 +46,26 @@ public class FileExplorerService {
         try {
             Files.list(directoryPath).forEach(path -> {
                 String name = path.getFileName().toString();
-                try {
 
-                    // BLOQUEIA SYMLINK ANTES DE TUDO
+                try {
                     if (Files.isSymbolicLink(path)) {
-                        directoryView.addChild(DirectoryView.symlink(name, "Symlink não pode ser navegado"));
+                        directoryView.addChild(
+                                DirectoryView.symlink(name, "Symlink não pode ser navegado"));
                         return;
                     }
 
-                    // DIRETÓRIO REAL
                     if (Files.isDirectory(path)) {
                         directoryView.addChild(buildDirectoryTree(path, name));
                         return;
                     }
 
-                    // ARQUIVO REAL
                     if (Files.isRegularFile(path)) {
                         directoryView.addChild(new FileView(name));
                     }
+
                 } catch (Exception e) {
-                    directoryView.addChild(FileView.inaccessible(name, "Arquivo inacessível"));
+                    directoryView.addChild(
+                            FileView.inaccessible(name, "Arquivo inacessível"));
                 }
             });
         } catch (Exception e) {
@@ -70,35 +73,25 @@ public class FileExplorerService {
                     logicalName,
                     "Diretório inacessível");
         }
+
         return directoryView;
     }
 
-    // NÃO IMPLEMENTADOS
-
-    public Resource loadAsResource(String path) {
-        // TODO: Implementar download de arquivo
-        // Path safePath = PathSanitizer.sanitize(path, rootPath);
-        throw new UnsupportedOperationException("Unimplemented method 'loadAsResource'");
-    }
-
+    // =========================
+    // INFO
+    // =========================
     public FileInfoResponse info(String path) {
-
-        if (path == null || path.isBlank()) {
-            throw new IllegalArgumentException("O parâmetro 'path' é obrigatório");
-        }
 
         Path target = PathSanitizer.sanitize(path, rootPath);
 
         if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
-            throw new IllegalArgumentException("Arquivo ou diretório não encontrado");
+            throw new NotFoundException("Arquivo ou diretório não encontrado");
         }
 
         try {
-            // 🔗 DETECTA SYMLINK
             if (Files.isSymbolicLink(target)) {
 
                 Path realTarget = target.toRealPath();
-
                 boolean escapesRoot = !realTarget.startsWith(rootPath.toRealPath());
 
                 return new FileInfoResponse(
@@ -109,8 +102,10 @@ public class FileExplorerService {
                         false,
                         escapesRoot);
             }
+
             boolean isDirectory = Files.isDirectory(target, LinkOption.NOFOLLOW_LINKS);
             boolean isFile = Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS);
+
             String mimeType = null;
             long size = 0;
             boolean executable = false;
@@ -132,5 +127,12 @@ public class FileExplorerService {
         } catch (Exception e) {
             throw new IllegalStateException("Erro ao obter informações do arquivo", e);
         }
+    }
+
+    // =========================
+    // DOWNLOAD (futuro)
+    // =========================
+    public Resource loadAsResource(String path) {
+        throw new UnsupportedOperationException("Download ainda não implementado");
     }
 }
