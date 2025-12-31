@@ -4,6 +4,8 @@ import com.yuridiasns.secure_file_explorer_backend.model.ApiResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.ExplorerResponse;
 import com.yuridiasns.secure_file_explorer_backend.service.FileExplorerService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,25 +26,20 @@ public class FileExplorerController {
     // LISTAR DIRETÓRIO
     // =========================
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> listDirectory(
-            @RequestParam(defaultValue = "") String path
-    ) {
+    public ResponseEntity<ApiResponse<?>> listDirectory(HttpServletRequest request) {
+        if (!request.getParameterMap().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.error("Este endpoint não aceita parâmetros"));
+        }
         try {
-            ExplorerResponse response = fileExplorerService.list(path);
+            ExplorerResponse response = fileExplorerService.listRoot();
 
             return ResponseEntity.ok(
-                    ApiResponse.success("Diretório listado com sucesso",response)
-            );
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    ApiResponse.error(e.getMessage())
-            );
+                    ApiResponse.success("Diretório listado com sucesso", response));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Erro interno ao listar diretório")
-            );
+                    ApiResponse.error("Erro interno ao listar diretório"));
         }
     }
 
@@ -51,27 +48,23 @@ public class FileExplorerController {
     // =========================
     @GetMapping("/download")
     public ResponseEntity<?> downloadFile(
-            @RequestParam String path
-    ) {
+            @RequestParam String path) {
         try {
             Resource resource = fileExplorerService.loadAsResource(path);
 
             return ResponseEntity.ok()
                     .header(
                             HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + resource.getFilename() + "\""
-                    )
+                            "attachment; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
-                    ApiResponse.error(e.getMessage())
-            );
+                    ApiResponse.error(e.getMessage()));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Erro ao processar download do arquivo")
-            );
+                    ApiResponse.error("Erro ao processar download do arquivo"));
         }
     }
 
@@ -80,27 +73,20 @@ public class FileExplorerController {
     // =========================
     @GetMapping("/info")
     public ResponseEntity<ApiResponse<?>> getInfo(
-            @RequestParam(defaultValue = "") String path
-    ) {
+            @RequestParam String path) {
         try {
             Object info = fileExplorerService.info(path);
 
             return ResponseEntity.ok(
-                    ApiResponse.success(
-                            "Informações obtidas com sucesso",
-                            info
-                    )
-            );
+                    ApiResponse.success("Informações obtidas com sucesso", info));
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
-                    ApiResponse.error(e.getMessage())
-            );
+                    ApiResponse.error(e.getMessage()));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Erro ao obter informações")
-            );
+                    ApiResponse.error("Erro ao obter informações"));
         }
     }
 }

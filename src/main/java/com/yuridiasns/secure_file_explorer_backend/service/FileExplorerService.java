@@ -32,12 +32,7 @@ public class FileExplorerService {
 
     // LISTAR ÁRVORE COMPLETA
 
-    public ExplorerResponse list(String path) {
-        // TODO: Implementar navegação por subdiretórios
-        // Aqui o path está sendo recebido do endpoint, porem como atualmente não
-        // e utilizado para navegar, ele é ignorado, logo sempre será listados os
-        // diretorios
-        // a partir do diretorio raiz.
+    public ExplorerResponse listRoot() {
         DirectoryView rootView = buildDirectoryTree(rootPath, "workdir");
         return new ExplorerResponse(rootView);
     }
@@ -87,6 +82,10 @@ public class FileExplorerService {
     }
 
     public FileInfoResponse info(String path) {
+
+        if (path == null || path.isBlank()) {
+            throw new IllegalArgumentException("O parâmetro 'path' é obrigatório");
+        }
 
         Path target = PathSanitizer.sanitize(path, rootPath);
 
