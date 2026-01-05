@@ -1,10 +1,12 @@
 package com.yuridiasns.secure_file_explorer_backend.exception;
 
-import com.yuridiasns.secure_file_explorer_backend.model.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.yuridiasns.secure_file_explorer_backend.model.Response.ApiResponse;
+
 import org.springframework.web.bind.MissingServletRequestParameterException;
 
 @RestControllerAdvice

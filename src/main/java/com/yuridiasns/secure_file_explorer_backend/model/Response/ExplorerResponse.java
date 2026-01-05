@@ -1,4 +1,6 @@
-package com.yuridiasns.secure_file_explorer_backend.model;
+package com.yuridiasns.secure_file_explorer_backend.model.Response;
+
+import com.yuridiasns.secure_file_explorer_backend.model.View.DirectoryView;
 
 public class ExplorerResponse {
 

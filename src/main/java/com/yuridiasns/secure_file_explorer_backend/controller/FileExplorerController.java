@@ -1,8 +1,8 @@
 package com.yuridiasns.secure_file_explorer_backend.controller;
 
-import com.yuridiasns.secure_file_explorer_backend.model.ApiResponse;
-import com.yuridiasns.secure_file_explorer_backend.model.ExplorerResponse;
-import com.yuridiasns.secure_file_explorer_backend.model.FileInfoResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.Response.ApiResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.Response.ExplorerResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.Response.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.service.FileExplorerService;
 
 import org.springframework.web.bind.annotation.*;
