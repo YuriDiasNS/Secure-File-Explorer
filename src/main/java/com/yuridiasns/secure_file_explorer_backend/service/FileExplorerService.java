@@ -10,8 +10,8 @@ import com.yuridiasns.secure_file_explorer_backend.model.View.DirectoryView;
 import com.yuridiasns.secure_file_explorer_backend.model.View.FileView;
 import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
@@ -31,6 +31,10 @@ public class FileExplorerService {
     private void validateRoot() {
         if (rootPath == null || !Files.isDirectory(rootPath)) {
             throw new IllegalStateException("Diretório raiz inválido");
+        }
+
+        if (Files.isSymbolicLink(rootPath)) {
+            throw new IllegalStateException("Diretório raiz não pode ser symlink");
         }
     }
 
@@ -165,9 +169,7 @@ public class FileExplorerService {
                         "Caminho resolve para fora do diretório permitido");
             }
 
-            Resource resource = new UrlResource(realTarget.toUri());
-            // realTarget.toUri() é garantido pelo JDK como não-nulo.
-            // Warning ocorre por ausência de @NonNull na assinatura.
+            Resource resource = new FileSystemResource(realTarget);
 
             if (!resource.exists() || !resource.isReadable()) {
                 throw new NotFoundException("Arquivo não pode ser lido");
