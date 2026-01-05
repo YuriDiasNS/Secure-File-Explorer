@@ -90,12 +90,12 @@ public class FileExplorerService {
 
         Path target = PathSanitizer.sanitize(path, rootPath);
 
+        // Symlink NÃO pode estar em diretórios pais
+        PathSanitizer.rejectSymlinkInParents(rootPath, target);
+
         if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
             throw new NotFoundException("Arquivo ou diretório não encontrado");
         }
-
-        // Symlink NÃO pode estar em diretórios pais
-        PathSanitizer.rejectSymlinkInParents(rootPath, target);
 
         try {
             if (Files.isSymbolicLink(target)) {
@@ -148,6 +148,9 @@ public class FileExplorerService {
 
         Path logicalPath = PathSanitizer.sanitize(path, rootPath);
 
+        // Bloqueia QUALQUER symlink
+        PathSanitizer.rejectAnySymlink(rootPath, logicalPath);
+
         if (!Files.exists(logicalPath, LinkOption.NOFOLLOW_LINKS)) {
             throw new NotFoundException("Arquivo não encontrado");
         }
@@ -156,9 +159,6 @@ public class FileExplorerService {
             throw new BadRequestException(
                     "Não é possível fazer download de diretórios");
         }
-
-        // Bloqueia QUALQUER symlink
-        PathSanitizer.rejectAnySymlink(rootPath, logicalPath);
 
         try {
             Path realTarget = logicalPath.toRealPath();
