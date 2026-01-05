@@ -1,8 +1,9 @@
 package com.yuridiasns.secure_file_explorer_backend.service;
 
 import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
-//import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
+import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
 import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
+import com.yuridiasns.secure_file_explorer_backend.exception.SecurityViolationException;
 import com.yuridiasns.secure_file_explorer_backend.model.Response.ExplorerResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.Response.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.View.DirectoryView;
@@ -10,6 +11,7 @@ import com.yuridiasns.secure_file_explorer_backend.model.View.FileView;
 import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
@@ -88,6 +90,9 @@ public class FileExplorerService {
             throw new NotFoundException("Arquivo ou diretório não encontrado");
         }
 
+        // Symlink NÃO pode estar em diretórios pais
+        PathSanitizer.rejectSymlinkInParents(rootPath, target);
+
         try {
             if (Files.isSymbolicLink(target)) {
 
@@ -116,6 +121,8 @@ public class FileExplorerService {
                 executable = Files.isExecutable(target);
             }
 
+            // TODO: Talvez seja uma boa melhorar esse retorno ou até essa função inteira.
+            // Preocupação principal: isDirectory ? "directory" : "file"
             return new FileInfoResponse(
                     target.getFileName().toString(),
                     isDirectory ? "directory" : "file",
@@ -125,14 +132,56 @@ public class FileExplorerService {
                     false);
 
         } catch (Exception e) {
-            throw new IllegalStateException("Erro ao obter informações do arquivo", e);
+            throw new IllegalStateException(
+                    "Erro ao obter informações do arquivo", e);
         }
     }
 
     // =========================
-    // DOWNLOAD (futuro)
+    // DOWNLOAD
     // =========================
     public Resource loadAsResource(String path) {
-        throw new UnsupportedOperationException("Download ainda não implementado");
+
+        Path logicalPath = PathSanitizer.sanitize(path, rootPath);
+
+        if (!Files.exists(logicalPath, LinkOption.NOFOLLOW_LINKS)) {
+            throw new NotFoundException("Arquivo não encontrado");
+        }
+
+        if (Files.isDirectory(logicalPath, LinkOption.NOFOLLOW_LINKS)) {
+            throw new BadRequestException(
+                    "Não é possível fazer download de diretórios");
+        }
+
+        // Bloqueia QUALQUER symlink
+        PathSanitizer.rejectAnySymlink(rootPath, logicalPath);
+
+        try {
+            Path realTarget = logicalPath.toRealPath();
+            Path realRoot = rootPath.toRealPath();
+
+            if (!realTarget.startsWith(realRoot)) {
+                throw new SecurityViolationException(
+                        "Caminho resolve para fora do diretório permitido");
+            }
+
+            Resource resource = new UrlResource(realTarget.toUri());
+            // realTarget.toUri() é garantido pelo JDK como não-nulo.
+            // Warning ocorre por ausência de @NonNull na assinatura.
+
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new NotFoundException("Arquivo não pode ser lido");
+            }
+
+            return resource;
+
+        } catch (SecurityViolationException e) {
+            throw e;
+
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Erro ao preparar download do arquivo", e);
+        }
     }
+
 }
