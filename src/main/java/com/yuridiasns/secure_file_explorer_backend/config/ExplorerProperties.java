@@ -14,6 +14,19 @@ public class ExplorerProperties {
      */
     private Path rootPath;
 
+    /**
+     * Tamanho máximo permitido para download (em bytes)
+     */
+    private long maxDownloadSize;
+
+    public long getMaxDownloadSize() {
+        return maxDownloadSize;
+    }
+
+    public void setMaxDownloadSize(long maxDownloadSize) {
+        this.maxDownloadSize = maxDownloadSize;
+    }
+
     public Path getRootPath() {
         return rootPath;
     }

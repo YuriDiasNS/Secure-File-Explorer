@@ -4,3 +4,4 @@ spring:
 
 explorer:
   root-path: ./workdir
+  max-download-size: 52428800 # 50 MB

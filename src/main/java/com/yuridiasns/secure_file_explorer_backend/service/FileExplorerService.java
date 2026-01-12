@@ -22,9 +22,11 @@ import java.nio.file.Path;
 public class FileExplorerService {
 
     private final Path rootPath;
+    private final long maxDownloadSize;
 
     public FileExplorerService(ExplorerProperties properties) {
         this.rootPath = properties.getRootPath();
+        this.maxDownloadSize = properties.getMaxDownloadSize();
         validateRoot();
     }
 
@@ -173,6 +175,13 @@ public class FileExplorerService {
 
             if (!resource.exists() || !resource.isReadable()) {
                 throw new NotFoundException("Arquivo não pode ser lido");
+            }
+
+            long fileSize = Files.size(realTarget);
+
+            if (fileSize > maxDownloadSize) {
+                throw new BadRequestException(
+                        "Arquivo excede o tamanho máximo permitido para download");
             }
 
             return resource;

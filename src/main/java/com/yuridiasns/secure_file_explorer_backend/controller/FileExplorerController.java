@@ -49,11 +49,18 @@ public class FileExplorerController {
 
         Resource resource = fileExplorerService.loadAsResource(path);
 
+        String filename = resource.getFilename();
+
+        String safeFilename = (filename != null) ? filename.replace("\"", "_") : "download";
+
         return ResponseEntity.ok()
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + resource.getFilename() + "\"")
-                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                        "attachment; filename=\"" + safeFilename + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                .header("X-Content-Type-Options", "nosniff")
+                .header(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate")
+                .header(HttpHeaders.PRAGMA, "no-cache")
                 .body(resource);
     }
 
