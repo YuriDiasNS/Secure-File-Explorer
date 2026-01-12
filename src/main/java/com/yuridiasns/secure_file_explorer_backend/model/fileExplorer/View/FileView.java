@@ -1,4 +1,4 @@
-package com.yuridiasns.secure_file_explorer_backend.model.View;
+package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.View;
 
 public class FileView {
 
