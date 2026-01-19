@@ -86,4 +86,14 @@ public final class PathSanitizer {
                     "Erro ao validar symlinks no caminho", e);
         }
     }
+
+    // =========================
+    // garante escopo absoluto (runtime)
+    // =========================
+    public static void ensureWithinRoot(Path root, Path candidate) {
+        if (!candidate.normalize().startsWith(root)) {
+            throw new SecurityViolationException(
+                    "Tentativa de acesso fora do diretório permitido");
+        }
+    }
 }
