@@ -18,6 +18,7 @@ public class FileManagerController {
         this.fileManagerService = fileManagerService;
     }
 
+    // TODO: Posteriormente, garantir a padronização dos requests de FileManager via body (não mais via query param)
     @DeleteMapping("/delete")
     public ApiResponse<DeleteFileResponse> delete(
             @RequestBody(required = false) DeleteFileRequest request,
