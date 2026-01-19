@@ -28,62 +28,21 @@ public class FileManagerService {
     // =========================
     public DeleteFileResponse delete(DeleteFileRequest request) {
 
-    deleteInternal(request.getPath());
+        deleteInternal(request.getPath());
 
-    return new DeleteFileResponse(
-            request.getPath(),
-            true
-    );
-}
-private void deleteInternal(String path) {
-
-    System.out.println("DELETE chamado com path = " + path);
-
-    Path target = PathSanitizer.sanitize(path, rootPath);
-
-    if (target.equals(rootPath)) {
-        throw new BadRequestException("Não é permitido deletar o diretório raiz");
+        return new DeleteFileResponse(
+                request.getPath(),
+                true);
     }
 
-    PathSanitizer.rejectSymlinkInParents(rootPath, target);
-
-    if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
-        throw new NotFoundException("Arquivo ou diretório não encontrado");
-    }
-
-    try {
-        if (Files.isSymbolicLink(target)) {
-            Files.delete(target);
-            return;
-        }
-
-        if (Files.isDirectory(target, LinkOption.NOFOLLOW_LINKS)) {
-            deleteDirectoryRecursively(target);
-            return;
-        }
-
-        Files.delete(target);
-
-    } catch (AccessDeniedException e) {
-        throw new BadRequestException(
-                "Arquivo está em uso ou bloqueado pelo sistema");
-
-    } catch (IOException e) {
-        throw new IllegalStateException("Erro ao remover arquivo", e);
-    }
-}
-
-
-    public void delete(String path) {
+    private void deleteInternal(String path) {
 
         Path target = PathSanitizer.sanitize(path, rootPath);
 
-        // Não permitir deletar o próprio root
         if (target.equals(rootPath)) {
             throw new BadRequestException("Não é permitido deletar o diretório raiz");
         }
 
-        // Bloqueia symlink em diretórios pais
         PathSanitizer.rejectSymlinkInParents(rootPath, target);
 
         if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
