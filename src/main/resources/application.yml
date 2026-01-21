@@ -1,7 +1,17 @@
 spring:
   application:
     name: secure_file_explorer_backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10GB
+      max-request-size: 10GB
 
 explorer:
   root-path: ./workdir
   max-download-size: 52428800 # 50 MB
+  
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.multipart: DEBUG
