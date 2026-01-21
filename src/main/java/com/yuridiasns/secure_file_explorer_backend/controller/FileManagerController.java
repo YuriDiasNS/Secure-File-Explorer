@@ -2,11 +2,13 @@ package com.yuridiasns.secure_file_explorer_backend.controller;
 
 import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Request.DeleteFileRequest;
 import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Response.DeleteFileResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Response.UploadFileResponse;
 import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
 import com.yuridiasns.secure_file_explorer_backend.model.ApiResponse;
 import com.yuridiasns.secure_file_explorer_backend.service.FileManagerService;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/manage")
@@ -18,7 +20,8 @@ public class FileManagerController {
         this.fileManagerService = fileManagerService;
     }
 
-    // TODO: Posteriormente, garantir a padronização dos requests de FileManager via body (não mais via query param)
+    // TODO: Posteriormente, garantir a padronização dos requests de FileManager via
+    // body (não mais via query param)
     @DeleteMapping("/delete")
     public ApiResponse<DeleteFileResponse> delete(
             @RequestBody(required = false) DeleteFileRequest request,
@@ -39,6 +42,16 @@ public class FileManagerController {
         DeleteFileResponse response = fileManagerService.delete(new DeleteFileRequest(finalPath));
 
         return ApiResponse.success("Arquivo removido com sucesso", response);
+    }
+
+    // TODO: Funciona, mas seria uma boa ideia refinar isso depois
+    @PostMapping("/upload")
+    public ApiResponse<UploadFileResponse> upload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "path", required = false) String path) {
+
+        UploadFileResponse response = fileManagerService.upload(file, path);
+        return ApiResponse.success("Arquivo enviado com sucesso", response);
     }
 
 }

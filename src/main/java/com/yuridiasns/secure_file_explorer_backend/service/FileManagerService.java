@@ -2,12 +2,15 @@ package com.yuridiasns.secure_file_explorer_backend.service;
 
 import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Request.DeleteFileRequest;
 import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Response.DeleteFileResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Response.UploadFileResponse;
 import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
 import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
 import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
+import com.yuridiasns.secure_file_explorer_backend.exception.SecurityViolationException;
 import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -120,6 +123,73 @@ public class FileManagerService {
                         return FileVisitResult.CONTINUE;
                     }
                 });
+    }
+
+    // =========================
+    // UPLOAD 
+    // =========================
+    // TODO: Funciona, mas assim como o controller seria uma boa ideia refinar isso depois
+    public UploadFileResponse upload(MultipartFile file, String path) {
+
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("Arquivo não informado ou vazio");
+        }
+
+        String originalFileName = Path.of(file.getOriginalFilename())
+                .getFileName()
+                .toString();
+
+        if (originalFileName.isBlank()) {
+            throw new BadRequestException("Nome do arquivo inválido");
+        }
+
+        Path targetDir = (path == null || path.isBlank())
+                ? rootPath
+                : PathSanitizer.sanitize(path, rootPath);
+
+        // Bloqueia symlink nos pais
+        PathSanitizer.rejectSymlinkInParents(rootPath, targetDir);
+
+        try {
+            if (!Files.exists(targetDir, LinkOption.NOFOLLOW_LINKS)) {
+                Files.createDirectories(targetDir);
+            }
+
+            if (!Files.isDirectory(targetDir, LinkOption.NOFOLLOW_LINKS)) {
+                throw new BadRequestException("Destino não é um diretório");
+            }
+
+            Path targetFile = targetDir
+                    .resolve(originalFileName)
+                    .normalize();
+
+            if (!targetFile.startsWith(rootPath)) {
+                throw new SecurityViolationException(
+                        "Tentativa de escrita fora do diretório permitido");
+            }
+
+            boolean overwritten = Files.exists(
+                    targetFile, LinkOption.NOFOLLOW_LINKS);
+
+            Files.copy(
+                    file.getInputStream(),
+                    targetFile,
+                    StandardCopyOption.REPLACE_EXISTING);
+
+            String relativePath = rootPath
+                    .relativize(targetFile)
+                    .toString();
+
+            return new UploadFileResponse(
+                    originalFileName,
+                    relativePath,
+                    file.getSize(),
+                    overwritten);
+
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Erro ao salvar o arquivo no sistema", e);
+        }
     }
 
 }
