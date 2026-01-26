@@ -1,4 +1,4 @@
-package com.yuridiasns.secure_file_explorer_backend.model.fileManager.Request;
+package com.yuridiasns.secure_file_explorer_backend.model.fileManager.request;
 
 import jakarta.validation.constraints.NotBlank;
 

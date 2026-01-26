@@ -4,10 +4,10 @@ import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
 import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
 import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
 import com.yuridiasns.secure_file_explorer_backend.exception.SecurityViolationException;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.Response.ExplorerResponse;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.Response.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
 import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.FileNode;
+import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response.ExplorerResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 import org.springframework.core.io.FileSystemResource;

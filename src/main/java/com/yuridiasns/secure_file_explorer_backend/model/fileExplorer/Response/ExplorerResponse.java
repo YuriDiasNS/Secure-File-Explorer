@@ -1,4 +1,4 @@
-package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.Response;
+package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response;
 
 import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
 

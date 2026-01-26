@@ -1,8 +1,8 @@
 package com.yuridiasns.secure_file_explorer_backend.controller;
 
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Request.DeleteFileRequest;
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Response.DeleteFileResponse;
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.Response.UploadFileResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.fileManager.request.DeleteFileRequest;
+import com.yuridiasns.secure_file_explorer_backend.model.fileManager.response.DeleteFileResponse;
+import com.yuridiasns.secure_file_explorer_backend.model.fileManager.response.UploadFileResponse;
 import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
 import com.yuridiasns.secure_file_explorer_backend.model.ApiResponse;
 import com.yuridiasns.secure_file_explorer_backend.service.FileManagerService;

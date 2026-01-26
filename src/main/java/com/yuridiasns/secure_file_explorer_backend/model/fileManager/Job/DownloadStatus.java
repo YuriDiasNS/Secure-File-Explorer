@@ -1,4 +1,4 @@
-package com.yuridiasns.secure_file_explorer_backend.model.fileManager.Job;
+package com.yuridiasns.secure_file_explorer_backend.model.fileManager.job;
 
 public class DownloadStatus {
     
