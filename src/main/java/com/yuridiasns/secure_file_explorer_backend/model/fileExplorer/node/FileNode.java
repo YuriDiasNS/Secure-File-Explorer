@@ -1,20 +1,20 @@
-package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.View;
+package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node;
 
-public class FileView {
+public class FileNode {
 
     private String name;
     private String type;
     private boolean accessible;
     private String error;
 
-    public FileView(String name) {
+    public FileNode(String name) {
         this.name = name;
         this.type = "file";
         this.accessible = true;
     }
 
-    public static FileView inaccessible(String name, String error) {
-        FileView view = new FileView(name);
+    public static FileNode inaccessible(String name, String error) {
+        FileNode view = new FileNode(name);
         view.accessible = false;
         view.error = error;
         return view;
