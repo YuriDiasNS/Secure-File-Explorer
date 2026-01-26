@@ -13,5 +13,5 @@ explorer:
   
 logging:
   level:
-    org.springframework.web: DEBUG
-    org.springframework.web.multipart: DEBUG
+    '[org.springframework.web]': DEBUG
+    '[org.springframework.web.multipart]': DEBUG
