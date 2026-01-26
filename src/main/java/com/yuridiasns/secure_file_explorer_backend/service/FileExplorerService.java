@@ -6,8 +6,8 @@ import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
 import com.yuridiasns.secure_file_explorer_backend.exception.SecurityViolationException;
 import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.Response.ExplorerResponse;
 import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.Response.FileInfoResponse;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.View.DirectoryView;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.View.FileView;
+import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
+import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.FileNode;
 import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 import org.springframework.core.io.FileSystemResource;
@@ -44,12 +44,12 @@ public class FileExplorerService {
     // LISTAR ROOT
     // =========================
     public ExplorerResponse listRoot() {
-        DirectoryView rootView = buildDirectoryTree(rootPath, "workdir");
+        DirectoryNode rootView = buildDirectoryTree(rootPath, "workdir");
         return new ExplorerResponse(rootView);
     }
 
-    private DirectoryView buildDirectoryTree(Path directoryPath, String logicalName) {
-        DirectoryView directoryView = new DirectoryView(logicalName);
+    private DirectoryNode buildDirectoryTree(Path directoryPath, String logicalName) {
+        DirectoryNode directoryView = new DirectoryNode(logicalName);
 
         try {
             Files.list(directoryPath).forEach(path -> {
@@ -58,7 +58,7 @@ public class FileExplorerService {
                 try {
                     if (Files.isSymbolicLink(path)) {
                         directoryView.addChild(
-                                DirectoryView.symlink(name, "Symlink não pode ser navegado"));
+                                DirectoryNode.symlink(name, "Symlink não pode ser navegado"));
                         return;
                     }
 
@@ -68,16 +68,16 @@ public class FileExplorerService {
                     }
 
                     if (Files.isRegularFile(path)) {
-                        directoryView.addChild(new FileView(name));
+                        directoryView.addChild(new FileNode(name));
                     }
 
                 } catch (Exception e) {
                     directoryView.addChild(
-                            FileView.inaccessible(name, "Arquivo inacessível"));
+                            FileNode.inaccessible(name, "Arquivo inacessível"));
                 }
             });
         } catch (Exception e) {
-            return DirectoryView.inaccessible(
+            return DirectoryNode.inaccessible(
                     logicalName,
                     "Diretório inacessível");
         }

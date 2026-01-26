@@ -1,16 +1,16 @@
 package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.Response;
 
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.View.DirectoryView;
+import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
 
 public class ExplorerResponse {
 
-    private DirectoryView root;
+    private DirectoryNode root;
 
-    public ExplorerResponse(DirectoryView root) {
+    public ExplorerResponse(DirectoryNode root) {
         this.root = root;
     }
 
-    public DirectoryView getRoot() {
+    public DirectoryNode getRoot() {
         return root;
     }
 }
