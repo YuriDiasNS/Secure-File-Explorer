@@ -15,3 +15,5 @@ logging:
   level:
     '[org.springframework.web]': DEBUG
     '[org.springframework.web.multipart]': DEBUG
+    '[org.springdoc]': DEBUG
+    '[io.swagger.v3]': DEBUG
