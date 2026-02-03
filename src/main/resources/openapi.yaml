@@ -1,0 +1,290 @@
+openapi: 3.0.3
+info:
+  title: Secure File Explorer API
+  description: >
+    API para gerenciamento seguro de arquivos em um diretório isolado (workdir),
+    permitindo navegação, inspeção, download, upload e remoção de arquivos.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Ambiente local
+
+paths:
+
+  # =========================
+  # FILE EXPLORER
+  # =========================
+
+  /api/explorer:
+    get:
+      summary: Listar diretório raiz
+      description: Retorna a estrutura do diretório raiz do workdir.
+      responses:
+        "200":
+          description: Diretório listado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExplorerApiResponse"
+
+  /api/explorer/info:
+    get:
+      summary: Obter informações de um arquivo ou diretório
+      description: Retorna metadados de um item específico dentro do workdir.
+      parameters:
+        - name: path
+          in: query
+          required: true
+          description: Caminho relativo do arquivo ou diretório
+          schema:
+            type: string
+            example: documents/report.pdf
+      responses:
+        "200":
+          description: Informações obtidas com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileInfoApiResponse"
+        "404":
+          description: Caminho não encontrado
+
+  /api/explorer/download:
+    get:
+      summary: Download de arquivo
+      description: Realiza o download de um arquivo existente no workdir.
+      parameters:
+        - name: path
+          in: query
+          required: true
+          description: Caminho relativo do arquivo
+          schema:
+            type: string
+            example: documents/report.pdf
+      responses:
+        "200":
+          description: Download realizado com sucesso
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Arquivo não encontrado
+        "400":
+          description: Caminho inválido
+
+  # =========================
+  # FILE MANAGER
+  # =========================
+
+  /api/manage/upload:
+    post:
+      summary: Upload de arquivo
+      description: >
+        Recebe um arquivo multipart e o salva no workdir.
+        Opcionalmente, um subdiretório pode ser informado.
+      parameters:
+        - name: path
+          in: query
+          required: false
+          description: Diretório de destino dentro do workdir
+          schema:
+            type: string
+            example: uploads/images
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Upload realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadApiResponse"
+        "400":
+          description: Arquivo inválido
+        "500":
+          description: Erro interno
+
+  /api/manage/delete:
+    delete:
+      summary: Remover arquivo ou diretório
+      description: >
+        Remove um arquivo ou diretório do workdir.
+        O caminho pode ser informado via body ou query param.
+      parameters:
+        - name: path
+          in: query
+          required: false
+          description: Caminho do arquivo ou diretório a ser removido
+          schema:
+            type: string
+            example: temp/old-file.txt
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteFileRequest"
+      responses:
+        "200":
+          description: Arquivo removido com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteApiResponse"
+        "400":
+          description: Parâmetro path ausente ou inválido
+        "404":
+          description: Caminho não encontrado
+
+# =========================
+# COMPONENTS
+# =========================
+
+components:
+  schemas:
+
+    # ---------
+    # REQUESTS
+    # ---------
+
+    DeleteFileRequest:
+      type: object
+      properties:
+        path:
+          type: string
+          example: temp/old-file.txt
+
+    # ----------
+    # RESPONSES
+    # ----------
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+
+    ExplorerApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/ExplorerResponse"
+
+    FileInfoApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/FileInfoResponse"
+
+    UploadApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/UploadFileResponse"
+
+    DeleteApiResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/DeleteFileResponse"
+
+    # ---------
+    # MODELS
+    # ---------
+
+    ExplorerResponse:
+      type: object
+      properties:
+        root:
+          $ref: "#/components/schemas/ExplorerNode"
+
+    ExplorerNode:
+      type: object
+      properties:
+        name:
+          type: string
+          example: workdir
+
+        type:
+          type: string
+          enum:
+            - file
+            - directory
+            - symlink
+
+        accessible:
+          type: boolean
+          example: true
+
+        error:
+          type: string
+          nullable: true
+          example: Symlink não pode ser navegado
+
+        children:
+          type: array
+          description: >
+            Lista de filhos. Presente apenas quando o tipo for "directory".
+          items:
+            $ref: "#/components/schemas/ExplorerNode"
+
+    FileInfoResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        size:
+          type: integer
+          format: int64
+        directory:
+          type: boolean
+        lastModified:
+          type: string
+          format: date-time
+
+    UploadFileResponse:
+      type: object
+      properties:
+        fileName:
+          type: string
+        path:
+          type: string
+        size:
+          type: integer
+          format: int64
+
+    DeleteFileResponse:
+      type: object
+      properties:
+        path:
+          type: string
+        deleted:
+          type: boolean

@@ -17,3 +17,9 @@ logging:
     '[org.springframework.web.multipart]': DEBUG
     '[org.springdoc]': DEBUG
     '[io.swagger.v3]': DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    url: /openapi.yaml

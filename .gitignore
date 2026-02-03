@@ -31,3 +31,29 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# =========================
+# Workdir
+# =========================
+
+# Ignora tudo dentro do workdir
+/workdir/*
+
+# Mas mantém a pasta versionada
+!/workdir/.gitkeep
+
+
+# =========================
+# Arquivos auxiliares
+# =========================
+
+# Arquivo de listagem da estrutura do projeto
+estrutura_projeto.txt
+
+# =========================
+# Segurança / Config
+# =========================
+*.env
+.env
+application-local.yml
+application-dev.yml
