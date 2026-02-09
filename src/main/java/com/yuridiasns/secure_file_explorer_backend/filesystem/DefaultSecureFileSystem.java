@@ -1,159 +1,147 @@
-// package com.yuridiasns.secure_file_explorer_backend.filesystem;
+package com.yuridiasns.secure_file_explorer_backend.filesystem;
 
-// import java.nio.file.Files;
-// import java.nio.file.LinkOption;
-// import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.util.stream.Stream;
 
-// import org.springframework.core.io.FileSystemResource;
-// import org.springframework.core.io.Resource;
-// import org.springframework.stereotype.Service;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 
-// import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
-// import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
-// import com.yuridiasns.secure_file_explorer_backend.exception.SecurityViolationException;
-// import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
-// import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.FileNode;
-// import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response.FileInfoResponse;
-// import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
+import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
+import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
+import com.yuridiasns.secure_file_explorer_backend.exception.SecurityViolationException;
+import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
+import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.FileNode;
+import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response.FileInfoResponse;
 
-// @Service
-// public class DefaultSecureFileSystem implements SecureFileSystem {
+@Service
+public class DefaultSecureFileSystem implements SecureFileSystem {
 
-//     @Override
-//     public DirectoryNode exploreTree(Path root, String logicalName) {
-//         DirectoryNode directoryView = new DirectoryNode(logicalName);
+    @Override
+    public DirectoryNode exploreTree(Path directory, String logicalName) {
+        DirectoryNode view = new DirectoryNode(logicalName);
 
-//         try {
-//             Files.list(root).forEach(path -> {
-//                 String name = path.getFileName().toString();
+        try (Stream<Path> entries = Files.list(directory)) {
+            entries.forEach(path -> {
+                String name = path.getFileName().toString();
 
-//                 try {
-//                     if (Files.isSymbolicLink(path)) {
-//                         directoryView.addChild(
-//                                 DirectoryNode.symlink(name, "Symlink não pode ser navegado"));
-//                         return;
-//                     }
+                try {
+                    if (Files.isSymbolicLink(path)) {
+                        view.addChild(
+                                DirectoryNode.symlink(name, "Symlink não pode ser navegado"));
+                        return;
+                    }
 
-//                     if (Files.isDirectory(path)) {
-//                         directoryView.addChild(exploreTree(path, name));
-//                         return;
-//                     }
+                    if (Files.isDirectory(path)) {
+                        view.addChild(exploreTree(path, name));
+                        return;
+                    }
 
-//                     if (Files.isRegularFile(path)) {
-//                         directoryView.addChild(new FileNode(name));
-//                     }
+                    if (Files.isRegularFile(path)) {
+                        view.addChild(new FileNode(name));
+                    }
 
-//                 } catch (Exception e) {
-//                     directoryView.addChild(
-//                             FileNode.inaccessible(name, "Arquivo inacessível"));
-//                 }
-//             });
-//         } catch (Exception e) {
-//             return DirectoryNode.inaccessible(
-//                     logicalName,
-//                     "Diretório inacessível");
-//         }
+                } catch (Exception e) {
+                    view.addChild(
+                            FileNode.inaccessible(name, "Arquivo inacessível"));
+                }
+            });
+        } catch (Exception e) {
+            return DirectoryNode.inaccessible(
+                    logicalName,
+                    "Diretório inacessível");
+        }
 
-//         return directoryView;
-//     }
+        return view;
+    }
 
-//     @Override
-//     public FileInfoResponse getInfo(Path root, Path target) {
+    @Override
+    public FileInfoResponse getInfo(Path root, Path target) {
 
-//         if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
-//             throw new NotFoundException("Arquivo ou diretório não encontrado");
-//         }
+        if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
+            throw new NotFoundException("Arquivo ou diretório não encontrado");
+        }
 
-//         try {
-//             if (Files.isSymbolicLink(target)) {
+        try {
+            if (Files.isSymbolicLink(target)) {
+                Path realTarget = target.toRealPath();
+                boolean escapesRoot = !realTarget.startsWith(root.toRealPath());
 
-//                 Path realTarget = target.toRealPath();
-//                 boolean escapesRoot = !realTarget.startsWith(root.toRealPath());
+                return new FileInfoResponse(
+                        target.getFileName().toString(),
+                        "symlink",
+                        null,
+                        0,
+                        false,
+                        escapesRoot);
+            }
 
-//                 return new FileInfoResponse(
-//                         target.getFileName().toString(),
-//                         "symlink",
-//                         null,
-//                         0,
-//                         false,
-//                         escapesRoot);
-//             }
+            boolean isDirectory = Files.isDirectory(target, LinkOption.NOFOLLOW_LINKS);
+            boolean isFile = Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS);
 
-//             boolean isDirectory = Files.isDirectory(target, LinkOption.NOFOLLOW_LINKS);
-//             boolean isFile = Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS);
+            String mimeType = null;
+            long size = 0;
+            boolean executable = false;
 
-//             String mimeType = null;
-//             long size = 0;
-//             boolean executable = false;
+            if (isFile) {
+                mimeType = Files.probeContentType(target);
+                size = Files.size(target);
+                executable = Files.isExecutable(target);
+            }
 
-//             if (isFile) {
-//                 mimeType = Files.probeContentType(target);
-//                 size = Files.size(target);
-//                 executable = Files.isExecutable(target);
-//             }
+            return new FileInfoResponse(
+                    target.getFileName().toString(),
+                    isDirectory ? "directory" : "file",
+                    mimeType,
+                    size,
+                    executable,
+                    false);
 
-//             // TODO: Talvez seja uma boa melhorar esse retorno ou até essa função inteira.
-//             // Preocupação principal: isDirectory ? "directory" : "file"
-//             return new FileInfoResponse(
-//                     target.getFileName().toString(),
-//                     isDirectory ? "directory" : "file",
-//                     mimeType,
-//                     size,
-//                     executable,
-//                     false);
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Erro ao obter informações do arquivo", e);
+        }
+    }
 
-//         } catch (Exception e) {
-//             throw new IllegalStateException(
-//                     "Erro ao obter informações do arquivo", e);
-//         }
-//     }
+    @Override
+    public Resource loadFileForDownload(Path root, Path target, long maxSize) {
 
-//     @Override
-//     public Resource loadFileForDownload(Path root, String target, long maxSize) {
-//         Path logicalPath = PathSanitizer.sanitize(target, root);
+        try {
+            Path realTarget = target.toRealPath();
+            Path realRoot = root.toRealPath();
 
-//         // Bloqueia QUALQUER symlink
-//         PathSanitizer.rejectAnySymlink(root, logicalPath);
+            if (!realTarget.startsWith(realRoot)) {
+                throw new SecurityViolationException(
+                        "Caminho resolve para fora do diretório permitido");
+            }
 
-//         if (!Files.exists(logicalPath, LinkOption.NOFOLLOW_LINKS)) {
-//             throw new NotFoundException("Arquivo não encontrado");
-//         }
+            if (Files.isDirectory(realTarget)) {
+                throw new BadRequestException(
+                        "Não é possível fazer download de diretórios");
+            }
 
-//         if (Files.isDirectory(logicalPath, LinkOption.NOFOLLOW_LINKS)) {
-//             throw new BadRequestException(
-//                     "Não é possível fazer download de diretórios");
-//         }
+            long size = Files.size(realTarget);
+            if (size > maxSize) {
+                throw new BadRequestException(
+                        "Arquivo excede o tamanho máximo permitido para download");
+            }
 
-//         try {
-//             Path realTarget = logicalPath.toRealPath();
-//             Path realRoot = root.toRealPath();
+            Resource resource = new FileSystemResource(realTarget);
 
-//             if (!realTarget.startsWith(realRoot)) {
-//                 throw new SecurityViolationException(
-//                         "Caminho resolve para fora do diretório permitido");
-//             }
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new NotFoundException("Arquivo não pode ser lido");
+            }
 
-//             Resource resource = new FileSystemResource(realTarget);
+            return resource;
 
-//             if (!resource.exists() || !resource.isReadable()) {
-//                 throw new NotFoundException("Arquivo não pode ser lido");
-//             }
+        } catch (SecurityViolationException e) {
+            throw e;
 
-//             long fileSize = Files.size(realTarget);
-
-//             if (fileSize > maxSize) {
-//                 throw new BadRequestException(
-//                         "Arquivo excede o tamanho máximo permitido para download");
-//             }
-
-//             return resource;
-
-//         } catch (SecurityViolationException e) {
-//             throw e;
-
-//         } catch (Exception e) {
-//             throw new IllegalStateException(
-//                     "Erro ao preparar download do arquivo", e);
-//         }
-//     }
-// }
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Erro ao preparar download do arquivo", e);
+        }
+    }
+}
