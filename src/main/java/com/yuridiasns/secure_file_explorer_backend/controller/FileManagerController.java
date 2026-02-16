@@ -1,10 +1,10 @@
 package com.yuridiasns.secure_file_explorer_backend.controller;
 
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.request.DeleteFileRequest;
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.response.DeleteFileResponse;
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.response.UploadFileResponse;
+import com.yuridiasns.secure_file_explorer_backend.dtos.ApiResponse;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileManager.request.DeleteFileRequest;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileManager.response.DeleteFileResponse;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileManager.response.UploadFileResponse;
 import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
-import com.yuridiasns.secure_file_explorer_backend.model.ApiResponse;
 import com.yuridiasns.secure_file_explorer_backend.service.FileManagerService;
 
 import org.springframework.web.bind.annotation.*;

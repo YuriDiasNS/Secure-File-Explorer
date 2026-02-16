@@ -1,4 +1,4 @@
-package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node;
+package com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.node;
 
 import java.util.ArrayList;
 import java.util.List;

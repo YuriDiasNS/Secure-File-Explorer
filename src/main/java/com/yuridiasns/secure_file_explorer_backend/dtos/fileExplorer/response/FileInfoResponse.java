@@ -1,4 +1,4 @@
-package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response;
+package com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.response;
 
 public class FileInfoResponse {
 

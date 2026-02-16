@@ -4,8 +4,8 @@ import java.nio.file.Path;
 
 import org.springframework.core.io.Resource;
 
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response.FileInfoResponse;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.node.DirectoryNode;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.response.FileInfoResponse;
 
 public interface SecureFileSystem {
 

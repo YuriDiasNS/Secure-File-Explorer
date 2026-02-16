@@ -7,9 +7,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.response.ExplorerResponse;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.response.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.filesystem.SecureFileSystem;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response.ExplorerResponse;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 @Service

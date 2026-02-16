@@ -1,4 +1,4 @@
-package com.yuridiasns.secure_file_explorer_backend.model;
+package com.yuridiasns.secure_file_explorer_backend.dtos;
 
 public class ApiResponse<T> {
 
