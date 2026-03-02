@@ -7,6 +7,12 @@ spring:
       max-file-size: 10GB
       max-request-size: 10GB
 
+external-download:
+  max-size-mb: 500
+  max-concurrent: 3
+  connect-timeout-seconds: 10
+  read-timeout-seconds: 60
+
 explorer:
   root-path: ./workdir
   max-download-size: 52428800 # 50 MB
