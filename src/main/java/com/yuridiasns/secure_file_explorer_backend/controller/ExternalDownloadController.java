@@ -15,62 +15,63 @@ import java.util.List;
 @RequestMapping("/api/external-download")
 public class ExternalDownloadController {
 
-    private final ExternalDownloadService externalDownloadService;
+        private final ExternalDownloadService externalDownloadService;
 
-    public ExternalDownloadController(ExternalDownloadService externalDownloadService) {
-        this.externalDownloadService = externalDownloadService;
-    }
+        public ExternalDownloadController(ExternalDownloadService externalDownloadService) {
+                this.externalDownloadService = externalDownloadService;
+        }
 
-    // =========================
-    // START DOWNLOAD
-    // =========================
-    @PostMapping
-    public ResponseEntity<ApiResponse<ExternalDownloadResponse>> startDownload(
-            @RequestBody ExternalDownloadRequest request) {
+        // =========================
+        // START DOWNLOAD
+        // =========================
+        @PostMapping
+        public ResponseEntity<ApiResponse<ExternalDownloadResponse>> startDownload(
+                        @RequestBody ExternalDownloadRequest request) {
 
-        ExternalDownloadResponse response =
-                externalDownloadService.startDownload(request);
+                ExternalDownloadResponse response = externalDownloadService.startDownload(request);
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Download(s) iniciado(s) com sucesso",
-                        response
-                )
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Download(s) iniciado(s) com sucesso",
+                                                response));
+        }
 
-    // =========================
-    // LIST ALL DOWNLOAD STATUS
-    // =========================
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<DownloadStatusResponse>>> listDownloads() {
+        // =========================
+        // LIST ALL DOWNLOAD STATUS
+        // =========================
+        @GetMapping
+        public ResponseEntity<ApiResponse<List<DownloadStatusResponse>>> listDownloads() {
 
-        List<DownloadStatusResponse> response =
-                externalDownloadService.listDownloads();
+                List<DownloadStatusResponse> response = externalDownloadService.listDownloads();
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Status dos downloads obtido com sucesso",
-                        response
-                )
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Status dos downloads obtido com sucesso",
+                                                response));
+        }
 
-    // =========================
-    // GET SPECIFIC DOWNLOAD
-    // =========================
-    @GetMapping("/{jobId}")
-    public ResponseEntity<ApiResponse<DownloadStatusResponse>> getDownloadStatus(
-            @PathVariable String jobId) {
+        // =========================
+        // GET SPECIFIC DOWNLOAD
+        // =========================
+        @GetMapping("/{jobId}")
+        public ResponseEntity<ApiResponse<DownloadStatusResponse>> getDownloadStatus(
+                        @PathVariable String jobId) {
 
-        DownloadStatusResponse response =
-                externalDownloadService.getDownloadStatus(jobId);
+                DownloadStatusResponse response = externalDownloadService.getDownloadStatus(jobId);
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Status do download obtido com sucesso",
-                        response
-                )
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Status do download obtido com sucesso",
+                                                response));
+        }
+
+        @DeleteMapping("/{jobId}")
+        public ResponseEntity<ApiResponse<Void>> cancelDownload(
+                        @PathVariable String jobId) {
+
+                externalDownloadService.cancelDownload(jobId);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success("Download cancelado com sucesso", null));
+        }
 }

@@ -30,4 +30,16 @@ public class DownloadManager {
     public void removeJob(String jobId) {
         jobs.remove(jobId);
     }
+
+    public void cancelJob(String jobId) {
+
+        DownloadJob job = jobs.get(jobId);
+
+        if (job == null) {
+            throw new RuntimeException("Download não encontrado");
+        }
+
+        job.cancel();
+    }
+
 }

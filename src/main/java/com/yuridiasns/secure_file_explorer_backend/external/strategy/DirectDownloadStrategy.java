@@ -1,5 +1,6 @@
 package com.yuridiasns.secure_file_explorer_backend.external.strategy;
 
+import com.yuridiasns.secure_file_explorer_backend.config.ExternalDownloadProperties;
 import com.yuridiasns.secure_file_explorer_backend.dtos.externalDownload.DownloadType;
 import com.yuridiasns.secure_file_explorer_backend.external.manager.DownloadJob;
 import com.yuridiasns.secure_file_explorer_backend.external.manager.DownloadStatus;
@@ -13,15 +14,25 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.*;
+import java.time.Duration;
 
 @Component
 public class DirectDownloadStrategy implements ExternalDownloadStrategy {
 
     private static final String DOWNLOAD_DIR = "workdir/";
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private final HttpClient httpClient;
+
+    public DirectDownloadStrategy(ExternalDownloadProperties properties) {
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(properties.getConnectTimeoutSeconds()))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+
+        this.properties = properties;
+    }
+
+    private final ExternalDownloadProperties properties;
 
     @Override
     public boolean supports(DownloadType type) {
@@ -40,12 +51,12 @@ public class DirectDownloadStrategy implements ExternalDownloadStrategy {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
+                    .timeout(Duration.ofSeconds(properties.getReadTimeoutSeconds()))
                     .GET()
                     .header("User-Agent", "SecureFileExplorer")
                     .build();
 
-            HttpResponse<InputStream> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
             if (response.statusCode() != 200) {
                 throw new RuntimeException("Erro HTTP: " + response.statusCode());
@@ -62,8 +73,12 @@ public class DirectDownloadStrategy implements ExternalDownloadStrategy {
                     .firstValueAsLong("Content-Length")
                     .orElse(-1);
 
+            if (contentLength > 0 && contentLength > properties.getMaxSizeBytes()) {
+                throw new RuntimeException("Arquivo excede o tamanho máximo permitido");
+            }
+
             try (InputStream inputStream = response.body();
-                 OutputStream outputStream = Files.newOutputStream(outputPath)) {
+                    OutputStream outputStream = Files.newOutputStream(outputPath)) {
 
                 byte[] buffer = new byte[8192];
                 int bytesRead;
@@ -71,13 +86,22 @@ public class DirectDownloadStrategy implements ExternalDownloadStrategy {
 
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
 
+                    if (job.isCancelled()) {
+                        throw new RuntimeException("Download cancelado pelo usuário");
+                    }
+
                     outputStream.write(buffer, 0, bytesRead);
                     totalRead += bytesRead;
+
+                    if (totalRead > properties.getMaxSizeBytes()) {
+                        throw new RuntimeException("Arquivo excede o tamanho máximo permitido");
+                    }
 
                     if (contentLength > 0) {
                         int progress = (int) ((totalRead * 100) / contentLength);
                         job.setProgress(progress);
                     }
+
                 }
             }
 

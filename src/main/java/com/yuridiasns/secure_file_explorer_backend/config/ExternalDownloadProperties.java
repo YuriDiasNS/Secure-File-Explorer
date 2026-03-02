@@ -10,6 +10,10 @@ public class ExternalDownloadProperties {
     private int connectTimeoutSeconds;
     private int readTimeoutSeconds;
 
+    public long getMaxSizeMb() {
+        return maxSizeMb;
+    }
+
     public long getMaxSizeBytes() {
         return maxSizeMb * 1024 * 1024;
     }

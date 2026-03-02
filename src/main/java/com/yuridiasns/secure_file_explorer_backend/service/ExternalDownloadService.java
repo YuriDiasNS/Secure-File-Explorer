@@ -84,8 +84,7 @@ public class ExternalDownloadService {
         return strategies.stream()
                 .filter(strategy -> strategy.supports(type))
                 .findFirst()
-                .orElseThrow(() ->
-                        new RuntimeException("Tipo de download não suportado: " + type));
+                .orElseThrow(() -> new RuntimeException("Tipo de download não suportado: " + type));
     }
 
     private DownloadStatusResponse toResponse(DownloadJob job) {
@@ -95,7 +94,10 @@ public class ExternalDownloadService {
                 job.getFileName(),
                 job.getStatus(),
                 job.getProgress(),
-                job.getMessage()
-        );
+                job.getMessage());
+    }
+
+    public void cancelDownload(String jobId) {
+        downloadManager.cancelJob(jobId);
     }
 }

@@ -11,6 +11,7 @@ public class DownloadJob {
     private volatile DownloadStatus status;
     private volatile int progress;
     private volatile String message;
+    private volatile boolean cancelled = false;
 
     public DownloadJob(String sourceUrl) {
         this.jobId = UUID.randomUUID().toString();
@@ -57,5 +58,13 @@ public class DownloadJob {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public void cancel() {
+        this.cancelled = true;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
     }
 }
