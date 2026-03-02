@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.yuridiasns.secure_file_explorer_backend.config.ExplorerProperties;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileManager.request.DeleteFileRequest;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileManager.response.DeleteFileResponse;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileManager.response.UploadFileResponse;
 import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
 import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
 import com.yuridiasns.secure_file_explorer_backend.filesystem.SecureFileManager;
 import com.yuridiasns.secure_file_explorer_backend.filesystem.UploadResult;
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.request.DeleteFileRequest;
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.response.DeleteFileResponse;
-import com.yuridiasns.secure_file_explorer_backend.model.fileManager.response.UploadFileResponse;
 import com.yuridiasns.secure_file_explorer_backend.security.PathSanitizer;
 
 @Service

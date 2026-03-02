@@ -1,6 +1,6 @@
-package com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response;
+package com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.response;
 
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.node.DirectoryNode;
 
 public class ExplorerResponse {
 

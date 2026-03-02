@@ -9,12 +9,12 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.node.DirectoryNode;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.node.FileNode;
+import com.yuridiasns.secure_file_explorer_backend.dtos.fileExplorer.response.FileInfoResponse;
 import com.yuridiasns.secure_file_explorer_backend.exception.BadRequestException;
 import com.yuridiasns.secure_file_explorer_backend.exception.NotFoundException;
 import com.yuridiasns.secure_file_explorer_backend.exception.SecurityViolationException;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.DirectoryNode;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.node.FileNode;
-import com.yuridiasns.secure_file_explorer_backend.model.fileExplorer.response.FileInfoResponse;
 
 @Service
 public class DefaultSecureFileSystem implements SecureFileSystem {
