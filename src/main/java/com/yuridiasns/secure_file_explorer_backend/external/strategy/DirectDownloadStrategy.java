@@ -45,9 +45,17 @@ public class DirectDownloadStrategy implements ExternalDownloadStrategy {
 
         job.setStatus(DownloadStatus.IN_PROGRESS);
 
+        Path outputPath = null;
+
         try {
 
             URI uri = URI.create(job.getSourceUrl());
+
+            String scheme = uri.getScheme();
+            if (!"http".equalsIgnoreCase(scheme) &&
+                    !"https".equalsIgnoreCase(scheme)) {
+                throw new RuntimeException("Protocolo não permitido");
+            }
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
@@ -67,13 +75,15 @@ public class DirectDownloadStrategy implements ExternalDownloadStrategy {
 
             Files.createDirectories(Paths.get(DOWNLOAD_DIR));
 
-            Path outputPath = Paths.get(DOWNLOAD_DIR, fileName);
+            String uniqueName = job.getJobId() + "_" + fileName;
+            outputPath = Paths.get(DOWNLOAD_DIR, uniqueName);
 
             long contentLength = response.headers()
                     .firstValueAsLong("Content-Length")
                     .orElse(-1);
 
-            if (contentLength > 0 && contentLength > properties.getMaxSizeBytes()) {
+            if (contentLength > 0 &&
+                    contentLength > properties.getMaxSizeBytes()) {
                 throw new RuntimeException("Arquivo excede o tamanho máximo permitido");
             }
 
@@ -101,7 +111,6 @@ public class DirectDownloadStrategy implements ExternalDownloadStrategy {
                         int progress = (int) ((totalRead * 100) / contentLength);
                         job.setProgress(progress);
                     }
-
                 }
             }
 
@@ -109,6 +118,14 @@ public class DirectDownloadStrategy implements ExternalDownloadStrategy {
             job.setStatus(DownloadStatus.COMPLETED);
 
         } catch (Exception e) {
+
+            // 👇 REMOVE ARQUIVO PARCIAL
+            if (outputPath != null) {
+                try {
+                    Files.deleteIfExists(outputPath);
+                } catch (IOException ignored) {
+                }
+            }
 
             job.setStatus(DownloadStatus.FAILED);
             job.setMessage(e.getMessage());
@@ -124,6 +141,8 @@ public class DirectDownloadStrategy implements ExternalDownloadStrategy {
         }
 
         String name = path.substring(path.lastIndexOf("/") + 1);
+
+        name = name.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
 
         if (name.isBlank()) {
             return "download_" + System.currentTimeMillis();
