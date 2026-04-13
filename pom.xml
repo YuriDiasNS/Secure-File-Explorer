@@ -14,7 +14,7 @@
 
 	<groupId>com.yuridiasns</groupId>
 	<artifactId>secure-file-explorer-backend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>secure-file-explorer-backend</name>
 	<description>Secure, read-only file explorer backend</description>
 
