@@ -13,10 +13,10 @@
 	</parent>
 
 	<groupId>com.yuridiasns</groupId>
-	<artifactId>secure-file-explorer-backend</artifactId>
+	<artifactId>simple-docker-archive-explorer-backend</artifactId>
 	<version>1.0.0</version>
-	<name>secure-file-explorer-backend</name>
-	<description>Secure, read-only file explorer backend</description>
+	<name>Simple-Docker-Archive-Explorer-Backend</name>
+	<description>Simple file explorer backend for Docker-based archive access</description>
 
 	<properties>
 		<java.version>21</java.version>

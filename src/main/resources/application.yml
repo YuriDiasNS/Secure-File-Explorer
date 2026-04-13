@@ -1,6 +1,6 @@
 spring:
   application:
-    name: secure_file_explorer_backend
+    name: simple-docker-archive-explorer-backend
   servlet:
     multipart:
       enabled: true
